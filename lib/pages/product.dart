@@ -6,12 +6,12 @@ import 'package:scoped_model/scoped_model.dart';
 import '../widgets/ui_elements/title_default.dart';
 import '../widgets/ui_elements/address_tag.dart';
 import '../models/product.dart';
-import '../scope_models/products.dart';
+import '../scope_models/main.dart';
 
 class ProductPage extends StatelessWidget {
-  final int productIndex;
+  final Product product;
 
-  ProductPage(this.productIndex);
+  ProductPage(this.product);
 
   @override
   Widget build(BuildContext context) {
@@ -20,41 +20,43 @@ class ProductPage extends StatelessWidget {
         Navigator.pop(context, false);
         return Future.value(false);
       },
-      child: ScopedModelDescendant<ProductModel>(
-        builder: (BuildContext context, Widget child, ProductModel model) {
-          final Product product = model.products[productIndex];
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(product.title),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(product.title),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            FadeInImage(
+              image: NetworkImage(product.image),
+              height: 300.0, //
+              fit: BoxFit.cover, // zooms in to fit
+              placeholder: AssetImage(
+                  'assets/food_background.jpg'), //display default image before loading from cache/server
             ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            Container(
+                padding: EdgeInsets.all(10.0),
+                child: TitleDefault(product.title)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Image.asset(product.image),
-                Container(
-                    padding: EdgeInsets.all(10.0), child: TitleDefault(product.title)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    AddressTag('Dunedin Central, Dunedin, New Zealand'),
-                    SizedBox(width: 10.0),
-                    Text(
-                      '\$' + product.price.toString(),
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
+                AddressTag('Dunedin Central, Dunedin, New Zealand'),
+                SizedBox(width: 10.0),
+                Text(
+                  '\$' + product.price.toString(),
+                  style: TextStyle(color: Colors.grey),
                 ),
-                Container(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    product.description,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                )
               ],
             ),
-          );
-        },
+            Container(
+              padding: EdgeInsets.all(10.0),
+              child: Text(
+                product.description,
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

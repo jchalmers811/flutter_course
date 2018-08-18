@@ -1,66 +1,84 @@
 import 'package:flutter/material.dart';
 
+import 'package:scoped_model/scoped_model.dart';
+
 import './product_edit.dart';
-import '../models/product.dart';
+import '../scope_models/main.dart';
 
-class ProductListPage extends StatelessWidget {
-  final List<Product> products;
-  final Function updateProduct;
-  final Function deleteProduct;
+class ProductListPage extends StatefulWidget {
+  final MainModel model;
 
-  ProductListPage(this.products, this.updateProduct, this.deleteProduct);
+  ProductListPage(this.model);
 
-  Widget _buildIconButton(BuildContext context, int index){
+  @override
+  State<StatefulWidget> createState() {
+    return _ProductListPageState();
+  }
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+
+  @override
+  initState() {
+    widget.model.fetchProducts(); // fetch products incase they have changed
+    super.initState();
+  }
+
+  Widget _buildIconButton(BuildContext context, int index, MainModel model) {
     return IconButton(
       icon: Icon(Icons.edit),
       onPressed: () {
+        model.selectProduct(model.allProducts[index].id);
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) {
-              return ProductEditPage(
-                  product: products[index],
-                  updateProduct: updateProduct,
-                  productIndex: index);
+              return ProductEditPage();
             },
           ),
-        );
+        ).then((_) {
+          model.selectProduct(null); // unselects product if back button used
+        });
       },
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) {
-        return Dismissible(
-          key: Key(products[index].title),
-          onDismissed: (DismissDirection direction) {
-            if (direction == DismissDirection.endToStart) {
-              deleteProduct(index);
-            } else {
-
-            }
-          },
-          background: Container(
-            color: Colors.red,
-          ),
-          child: Column(
-            children: <Widget>[
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: AssetImage(products[index].image),
-                ),
-                title: Text(products[index].title),
-                subtitle: Text('\$${products[index].price.toString()}'),
-                trailing: _buildIconButton(context, index),
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return Dismissible(
+              key: Key(model.allProducts[index].title),
+              onDismissed: (DismissDirection direction) {
+                if (direction == DismissDirection.endToStart) {
+                  model.selectProduct(model.allProducts[index].id);
+                  model.deleteProduct();
+                } else {}
+              },
+              background: Container(
+                color: Colors.red,
               ),
-              Divider(),
-            ],
-          ),
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage:
+                          NetworkImage(model.allProducts[index].image),
+                    ),
+                    title: Text(model.allProducts[index].title),
+                    subtitle:
+                        Text('\$${model.allProducts[index].price.toString()}'),
+                    trailing: _buildIconButton(context, index, model),
+                  ),
+                  Divider(),
+                ],
+              ),
+            );
+          },
+          itemCount: model.allProducts.length,
         );
       },
-      itemCount: products.length,
     );
   }
 }

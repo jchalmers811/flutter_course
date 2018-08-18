@@ -4,7 +4,7 @@ import 'package:scoped_model/scoped_model.dart';
 
 import 'product_card.dart';
 import '../../models/product.dart';
-import '../../scope_models/products.dart';
+import '../../scope_models/main.dart';
 
 // where possible use stateless widgets
 // re-renders when input data changes
@@ -28,9 +28,9 @@ class Products extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<ProductModel>(
-      builder: (BuildContext context, Widget child, ProductModel model) {
-        return _buildProductList(model.products);
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return _buildProductList(model.displayedProducts);
       },
     );
   }
